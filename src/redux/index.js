@@ -8,18 +8,15 @@ const ACTION_TYPE = {
     UPDATE_SEARCH_RESULT: 'UPDATE_SEARCH_RESULT'
 }
 
-function updateSearchResult(searchList) {
+function updateSearchResult(searchResult, searchParam, searchList) {
+    searchList[searchParam] = searchResult;
     return { type: ACTION_TYPE.UPDATE_SEARCH_RESULT, searchList };
 }
 
-function searchReducer(state = [], action) {
+function searchReducer(state = {}, action) {
     switch (action.type) {
         case ACTION_TYPE.UPDATE_SEARCH_RESULT: 
-            if(action.searchList.length > 0){
-                return action.searchList
-            }else{
-                return [];
-            }
+            return action.searchList
         default:
             return state;
     }
@@ -33,7 +30,7 @@ function isJson(str) {
 	}
 }
 
-function searchAPI(searchParam) {
+function searchAPI(searchParam, searchResult) {
     let options = {
 		method : 'GET',
 		headers: {
@@ -55,14 +52,14 @@ function searchAPI(searchParam) {
                         data = JSON.parse(str);
                         data.value = searchParam;
                         resp.data = data;
-                        dispatch(updateSearchResult(data.result || []))
+                        dispatch(updateSearchResult(data.results || [], searchParam, searchResult))
                     }else{
                         resp.data = {
                             code: 'SERVER_ERROR',
                             value: searchParam,
                             message: 'Something went wrong'
                         }
-                        dispatch(updateSearchResult([]))
+                        dispatch(updateSearchResult([], searchParam, searchResult))
                     }
                     return resp;
                 });
@@ -72,7 +69,7 @@ function searchAPI(searchParam) {
                     value: searchParam,
                     message: 'Something went wrong'
                 }
-                dispatch(updateSearchResult([]))
+                dispatch(updateSearchResult([], searchParam, searchResult))
             }
             return resp;
         })
@@ -82,7 +79,7 @@ function searchAPI(searchParam) {
                 value: searchParam,
                 message: 'Something went wrong'
             }
-            dispatch(updateSearchResult([]))
+            dispatch(updateSearchResult([], searchParam, searchResult))
             return resp;
         });
     };   
